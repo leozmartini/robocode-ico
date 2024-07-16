@@ -1,9 +1,20 @@
 package robotsICO;
 import robocode.*;
 import java.awt.Color;
+import robocode.HitRobotEvent;
+import robocode.Robot;
+import robocode.ScannedRobotEvent;
+import robocode.WinEvent;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
-public class RobocopMamonas extends AdvancedRobot
-{
+
+import java.awt.*;
+
+public class RobocopMamonas extends AdvancedRobot {
+	int count = 0; // Keeps track of how long we've
+	// been searching for our target
+	double gunTurnAmt; // How much to turn our gun when searching
+	String trackName; // Name of the robot we're currently tracking
+	
 public void run() {
 // Initialization of the robot should be put here
 
@@ -13,38 +24,40 @@ public void run() {
 // setColors(Color.red,Color.blue,Color.green); // body,gun,radar
 setColors(Color.white,Color.white,Color.blue);
 
-
+// Prepare gun
+		trackName = null; // Initialize to not tracking anyone
+		setAdjustGunForRobotTurn(true); // Keep the gun still when we turn
+		gunTurnAmt = 10; // Initialize gunTurn to 10
 
 // Robot main loop
 while(true) {
 // Replace the next 4 lines with any behavior you would like
-setAhead(100);
-setTurnRadarRight(360);
-setTurnRight(30);
-execute();
-avoidWalls();
-}
-}
-
-private void avoidWalls() {
-        // Check if close to any wall and adjust heading
-        if (getX() < 100) {
-            turnRight(90);
-        } else if (getX() > getBattleFieldWidth() - 100) {
-            turnLeft(90);
-        }
-
-        if (getY() < 100) {
-            turnRight(90);
-        } else if (getY() > getBattleFieldHeight() - 100) {
-            turnLeft(90);
-        }
-    }
+// turn the Gun (looks for enemy)
+			turnGunRight(gunTurnAmt);
+			// Keep track of how long we've been looking
+			count++;
+			// If we've haven't seen our target for 2 turns, look left
+			if (count > 2) {
+				gunTurnAmt = -10;
+			}
+			// If we still haven't seen our target for 5 turns, look right
+			if (count > 5) {
+				gunTurnAmt = 10;
+			}
+			// If we *still* haven't seen our target after 10 turns, find another target
+			if (count > 11) {
+				trackName = null;
+			}
+		}
+	}
 
 /**
 * onScannedRobot: What to do when you see another robot
 */
 public void onScannedRobot(ScannedRobotEvent e) {
+	setAhead(100);
+	setTurnRight(30);
+	execute();
 // Replace the next line with any behavior you would like
 double absoluteBearing = getHeading() + e.getBearing();
 double bearingFromGun = normalRelativeAngleDegrees(absoluteBearing - getGunHeading());
@@ -90,4 +103,10 @@ public void onHitWall(HitWallEvent e) {
 back(200);
 turnRight(90);
 }
+	public void onWin(WinEvent e) {
+		for (int i = 0; i < 50; i++) {
+			turnRight(30);
+			turnLeft(30);
+		}
+	}
 }

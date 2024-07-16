@@ -2,7 +2,7 @@ package robotsICO;
 import robocode.*;
 import java.awt.Color;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
-public class TanqueIncrivel extends AdvancedRobot
+public class RobocopMamonas extends AdvancedRobot
 {
 public void run() {
 // Initialization of the robot should be put here

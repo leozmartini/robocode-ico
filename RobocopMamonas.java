@@ -12,7 +12,7 @@ public class RobocopMamonas extends AdvancedRobot {
   String trackName;
 
   public void run() {
-    setColors(Color.white, Color.white, Color.blue);
+    setColors(Color.pink, Color.pink, Color.pink);
 
     trackName = null;
     setAdjustGunForRobotTurn(true);
@@ -69,7 +69,9 @@ public class RobocopMamonas extends AdvancedRobot {
 
   public void onWin(WinEvent e) {
     for (int i = 0; i < 50; i++) {
+      ahead(20);
       turnRight(30);
+      back(20);
       turnLeft(30);
     }
   }

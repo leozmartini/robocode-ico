@@ -3,12 +3,7 @@ package robotsICO;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
 
 import java.awt.*;
-import java.awt.Color;
 import robocode.*;
-import robocode.HitRobotEvent;
-import robocode.Robot;
-import robocode.ScannedRobotEvent;
-import robocode.WinEvent;
 
 public class RobocopMamonas extends AdvancedRobot {
 
@@ -21,27 +16,18 @@ public class RobocopMamonas extends AdvancedRobot {
 
     trackName = null;
     setAdjustGunForRobotTurn(true);
+    setAdjustRadarForGunTurn(true);
     gunTurnAmt = 10;
 
     while (true) {
-      turnGunRight(gunTurnAmt);
-      count++;
-      if (count > 2) {
-        gunTurnAmt = -10;
-      }
-      if (count > 5) {
-        gunTurnAmt = 10;
-      }
-      if (count > 11) {
-        trackName = null;
-      }
+      turnRadarRight(360);
     }
   }
 
   public void onScannedRobot(ScannedRobotEvent e) {
-    setAhead(100);
-    setTurnRight(30);
-    execute();
+    double radarTurn = getHeading() + e.getBearing() - getRadarHeading();
+    setTurnRadarRight(normalRelativeAngleDegrees(radarTurn));
+
     double absoluteBearing = getHeading() + e.getBearing();
     double bearingFromGun = normalRelativeAngleDegrees(
       absoluteBearing - getGunHeading()
@@ -54,18 +40,25 @@ public class RobocopMamonas extends AdvancedRobot {
         fire(Math.min(3 - Math.abs(bearingFromGun), getEnergy() - .1));
       }
     } else {
-      turnGunRight(bearingFromGun);
+      setTurnGunRight(bearingFromGun);
     }
 
-    if (bearingFromGun == 0) {
-      scan();
+    if (e.getDistance() < 100) {
+      setBack(50);
+      setTurnRight(90);
+      setAhead(150);
+    } else {
+      setAhead(100);
+      setTurnRight(30);
     }
+
+    execute();
   }
 
   public void onHitByBullet(HitByBulletEvent e) {
     setBack(50);
+    setTurnRight(90);
     setAhead(100);
-    setTurnRight(30);
     execute();
   }
 

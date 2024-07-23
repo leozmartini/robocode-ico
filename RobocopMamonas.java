@@ -1,56 +1,84 @@
 package robotsICO;
+
+import static robocode.util.Utils.normalRelativeAngleDegrees;
+import java.awt.*;
 import robocode.*;
-//import java.awt.Color;
 
-// API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
+public class RobocopMamonas extends AdvancedRobot {
 
-/**
- * RobocopMamonas - a robot by (your name here)
- */
-public class RobocopMamonas extends Robot
-{
-	/**
-	 * run: RobocopMamonas's default behavior
-	 */
-	public void run() {
-		// Initialization of the robot should be put here
+  int count = 0;
+  double gunTurnAmt;
+  String trackName;
 
-		// After trying out your robot, try uncommenting the import at the top,
-		// and the next line:
+  public void run() {
+    setColors(Color.pink, Color.pink, Color.pink);
 
-		// setColors(Color.red,Color.blue,Color.green); // body,gun,radar
+    trackName = null;
 
-		// Robot main loop
-		while(true) {
-			// Replace the next 4 lines with any behavior you would like
-			ahead(100);
-			turnGunRight(360);
-			back(100);
-			turnGunRight(360);
-		}
-	}
+    setAdjustGunForRobotTurn(true); // O canhão não gira com o robô
+    setAdjustRadarForGunTurn(true); // O radar não gira com o canhão
+    gunTurnAmt = 10; // Quantidade inicial de rotação do canhão
 
-	/**
-	 * onScannedRobot: What to do when you see another robot
-	 */
-	public void onScannedRobot(ScannedRobotEvent e) {
-		// Replace the next line with any behavior you would like
-		fire(1);
-	}
+    while (true) {
+      turnRadarRight(360); // Busca inimigos girando o radar
+    }
+  }
 
-	/**
-	 * onHitByBullet: What to do when you're hit by a bullet
-	 */
-	public void onHitByBullet(HitByBulletEvent e) {
-		// Replace the next line with any behavior you would like
-		back(10);
-	}
-	
-	/**
-	 * onHitWall: What to do when you hit a wall
-	 */
-	public void onHitWall(HitWallEvent e) {
-		// Replace the next line with any behavior you would like
-		back(20);
-	}	
+  public void onScannedRobot(ScannedRobotEvent e) {
+    // Ajusta o radar para focar no inimigo
+    double radarTurn = getHeading() + e.getBearing() - getRadarHeading();
+    setTurnRadarRight(normalRelativeAngleDegrees(radarTurn));
+
+    // Calcula o ângulo absoluto para o inimigo
+    double absoluteBearing = getHeading() + e.getBearing();
+    double bearingFromGun = normalRelativeAngleDegrees(absoluteBearing - getGunHeading());
+
+    // Se o inimigo estiver a menos de 10 graus da linha de fogo, atira
+    if (Math.abs(bearingFromGun) <= 10) {
+      fire(2);
+
+      // Atira novamente se o canhão estiver frio
+      if (getGunHeat() == 0) {
+        fire(Math.min(3 - Math.abs(bearingFromGun), getEnergy() - .1));
+      }
+    } else {
+      // Gira o canhão em direção ao inimigo
+      setTurnGunRight(bearingFromGun);
+    }
+
+    // Se o inimigo estiver perto, o robo sai de perto
+    if (e.getDistance() < 100) {
+      setBack(50);
+      setTurnRight(90);
+      setAhead(150);
+    } else {
+      // Se o inimigo estiver longe, vai pra frente e gira
+      setAhead(100);
+      setTurnRight(30);
+    }
+
+    execute();
+  }
+
+  public void onHitByBullet(HitByBulletEvent e) {
+    setBack(50);
+    setTurnRight(90);
+    setAhead(100);
+    execute();
+  }
+
+  public void onHitWall(HitWallEvent e) {
+    back(200);
+    turnRight(90);
+  }
+
+  public void onWin(WinEvent e) {
+    // Humilha o robo, dançando o reboleixon
+    for (int i = 0; i < 50; i++) {
+      ahead(20);
+      turnRight(30);
+      back(20);
+      turnLeft(30);
+    }
+  }
 }
